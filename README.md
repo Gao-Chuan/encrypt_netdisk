@@ -5,5 +5,5 @@ It's Cipher Policy Attribute Encryption With Verifiable Outsourced Decryption ba
 
 Computation in bilinear group powered by [Charm-Crypto(0.50)](http://charm-crypto.io/).
 
-The symmetric encryption algorithm is AES.
+The symmetric encryption algorithm is AES, powered by [PyCrypto](https://github.com/dlitz/pycrypto)
 
