@@ -1,5 +1,5 @@
 from cpabe import *
-from AES import AESCipher
+from AES import *
 
 class kem(object):
     def __init__(self, policy, group = False, key = False, verify = False):
@@ -22,8 +22,8 @@ class kem(object):
             self.key = key
 
         self.verify = verify
-    
-    def gen_symmetry_key(self, sym_key = False):
+
+    def gen_key(self, sym_key = False):
         """
         key must be string or False(random generate)
         """
@@ -34,72 +34,40 @@ class kem(object):
         
         # convert sym_key from ZR to GT (can not directly hash string to GT)
         sym_key1 = self.groupObj.hash(sym_key, G1)
-        sym_key2 = self.groupObj.hash(sym_key, G2)
+        sym_key2 = self.groupObj.hash(sym_key, G1)
         sym_key = self.groupObj.pair_prod(sym_key1, sym_key2)
 
         m_verify = self.groupObj.random(GT)
-        self.cpabe.encrypt(self.key['pk'], sym_key, m_verify, self.pol)
+        self.CT = self.cpabe.encrypt(self.key['pk'], sym_key, m_verify, self.pol)
 
-        # self.m = groupObj.random(GT)
-        # if verify:
-        #     self.m_ = groupObj.random(GT)
+        self.sym_key = hashlib.sha256(self.groupObj.serialize(sym_key)).hexdigest()
 
-        # if debug:
-        #     print('message:>>', self.m)
-        #     if verify:
-        #         print('message for verification:>>', self.m_)
+        return self.sym_key, self.CT, self.key
+
+    def cpabe_key(self, attr, key):
+        skx = self.cpabe.keygen(key['pk'], key['msk'], attr)
+        return skx
+
+    def get_key(self, ct, key, skx):
+        self.key = key
+        M = self.cpabe.decrypt(key['pk'], skx, ct)
+        sym_key = hashlib.sha256(self.groupObj.serialize(M)).hexdigest()
         
-        # self.cipher = cpabe.encrypt(pk, self.m, self.m_, pol)
-        
-    def get_kvm_key(self, parameter_list):
-        pass
+        return sym_key
     
 def main():
     #Get the eliptic curve with the bilinear mapping feature needed.
-    groupObj = PairingGroup('SS512')
-
-    cpabe = CPabe_zjz(groupObj)
-    (msk, pk) = cpabe.setup()
     pol = '((ONE or THREE) and (TWO or FOUR) or (FIVE and SIX and SEVEN and EIGHT or NINE or TEN and ELEVEN or TWELL))'
+
+    kemObj = kem(pol)
+    sym_key, ct, key = kemObj.gen_key('password')
+    print(sym_key)
+    print(ct)
     attr_list = ['THREE', 'ONE', 'TWO']
-
-    if debug:
-        print('Acces Policy: %s' % pol)
-    if debug:
-        print('User credential list: %s' % attr_list)
-    m = groupObj.random(GT)
-    m_ = groupObj.random(GT)
+    skx = kemObj.cpabe_key(attr_list, key)
+    sym_key = kemObj.get_key(ct, key, skx)
+    print(sym_key)
     
-    if debug:
-        print('message:>>', m)
-        print('message for verification:>>', m_)
-
-    cpkey = cpabe.keygen(pk, msk, attr_list)
-    
-    if debug:
-        print("\nSecret key: %s" % attr_list)
-    if debug:
-        groupObj.debug(cpkey)
-    
-    cipher = cpabe.encrypt(pk, m, m_, pol)
-
-    if debug:
-        print("\nCiphertext...")
-    if debug:
-        groupObj.debug(cipher)
-    
-    orig_m = cpabe.decrypt(pk, cpkey, cipher)
-    assert m == orig_m, 'FAILED Decryption!!!'
-    
-    if debug:
-        print('Successful Decryption!')
-
-    tk, rk = cpabe.gen_tk_out(pk, cpkey)
-    orig_m = cpabe.outsource(pk, cipher, tk, rk)
-    assert m == orig_m, 'FAILED Decryption!!!'
-
-    del groupObj
-
 
 if __name__ == '__main__':
     debug = True
