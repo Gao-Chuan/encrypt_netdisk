@@ -1,5 +1,5 @@
 from cpabe import *
-from AES import *
+import hashlib
 
 class kem(object):
     def __init__(self, policy, group = False, key = False, verify = False):
