@@ -1,5 +1,5 @@
 from kem import *
-import AES 
+import SM4 as AES 
 
 class cipher(object):
     def __init__(self, policy, password):
@@ -28,9 +28,14 @@ class cipher(object):
         return plain
 
 def main():
-    pol = '((ONE or THREE) and (TWO or FOUR) or (FIVE and SIX and SEVEN and EIGHT or NINE or TEN and ELEVEN or TWELL))'
-    cipherObj = cipher(pol, 'password')
-    key, cipher_text = cipherObj.encrypt('hello~')
+    pol = '(ONE or THREE) and (TWO or FOUR)'
+    pw = input('password:>>')
+    cipherObj = cipher(pol, pw)
+    plain = input('plain:>>')
+    key, cipher_text = cipherObj.encrypt(plain)
+
+    print(key)
+    print(cipher_text)
 
     attr = ['THREE', 'ONE', 'TWO']
     plain = cipherObj.decrypt(key['sym_key_cipher'], cipher_text, attr, key['key'])

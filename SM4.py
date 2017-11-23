@@ -43,8 +43,9 @@ class AESCipher(object):
 
 def main():
     cipher = AESCipher(key='mykey')
-    encrypted = cipher.encrypt("Hello World")
-    print(encrypted)
+    plain = input('plain:>>')
+    encrypted = cipher.encrypt(plain)
+    print('cipher:>>', encrypted)
     new_cipher = AESCipher(key='mykey')
     decrypted = new_cipher.decrypt(encrypted)
     print(decrypted)

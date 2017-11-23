@@ -57,11 +57,12 @@ class kem(object):
     
 def main():
     #Get the eliptic curve with the bilinear mapping feature needed.
-    pol = '((ONE or THREE) and (TWO or FOUR) or (FIVE and SIX and SEVEN and EIGHT or NINE or TEN and ELEVEN or TWELL))'
+    pol = '(ONE or THREE) and (TWO or FOUR)'
 
     kemObj = kem(pol)
-    sym_key, ct, key = kemObj.gen_key('password')
-    print(sym_key)
+    pw = input('pass word:>>')
+    sym_key, ct, key = kemObj.gen_key(pw)
+    # print(sym_key)
     print(ct)
     attr_list = ['THREE', 'ONE', 'TWO']
     skx = kemObj.cpabe_key(attr_list, key)
